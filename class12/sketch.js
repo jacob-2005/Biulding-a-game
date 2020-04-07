@@ -103,7 +103,7 @@ class Character {
 }
 
 class BadGuy extends Character {
-  fill = color(0);
+  fill = color(0, 0, 255);
   goodGuy = null;
   setGoodGuy(goodGuy){
     this.goodGuy = goodGuy;
