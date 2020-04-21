@@ -190,11 +190,11 @@ class Character {
     fill(this.fill)
     ellipse(this.x + (this.width/2), this.y + (this.height/2), this.width, this.height)
   }
-  move(){
+  tryToMove(direction){
     let newY = this.y;
     let newX = this.x;
 
-    if(characterMoveDirection == null){
+    if(direction == null){
       return;
     }
     if (this.currentPath.isHorizontal && (characterMoveNewDirection == 'up' || characterMoveNewDirection == 'down')){
@@ -203,7 +203,7 @@ class Character {
       this.tryToSwitchPaths();
     }
     
-      switch(characterMoveDirection){
+      switch(direction){
         case 'up': 
           newY -= this.velocity;
           lookingDirection = PI + HALF_PI;
@@ -283,11 +283,13 @@ class BadGuy extends Character {
     this.y = newY;
   }
   move(){
-    this.followGoodGuy();
+    //this.followGoodGuy();
   }
 }
 class PacManCharacter extends Character {
-
+move(){
+  this.tryToMove(characterMoveDirection);
+}
 }
 class Chamber {
   x = 340;
@@ -395,7 +397,7 @@ function setup() {
   createPathsAndRelationships();
   goodGuy = new PacManCharacter(200, 20, characterWidth, characterHeight, paths[0]);
 
-  badGuys[0] = new BadGuy(20, 200, characterWidth, characterHeight,paths[1]);
+  badGuys[0] = new BadGuy(20, 40, characterWidth, characterHeight,paths[1]);
 
   badGuys.forEach((badGuy, i) => {
     badGuy.setGoodGuy(goodGuy);
@@ -414,7 +416,7 @@ function draw() {
 
   badGuys.forEach((badGuy, i) => {
     badGuy.move();
-    // badGuy.draw();
+    badGuy.draw();
   });  
 
 }
