@@ -179,6 +179,7 @@ class Character {
   fill = color(255, 255, 0);
   velocity = 4;
   currentPath = null;
+  direction = null;
   characterMoveNewDirection = null;
   constructor(x, y, width, height, path, coords){
     this.x = x;
@@ -203,29 +204,30 @@ class Character {
     }else if (this.currentPath.isVertical && (this.characterMoveNewDirection == 'left' || this.characterMoveNewDirection == 'right')){
       this.tryToSwitchPaths();
     }
-    
-      switch(direction){
-        case 'up': 
-          newY -= this.velocity;
-          lookingDirection = PI + HALF_PI;
-          break;
-        case 'down':
-          newY += this.velocity;
-          lookingDirection = HALF_PI;
-          break;
-        case 'left':
-          newX -= this.velocity;
-          lookingDirection = PI;
-          break;
-        case 'right':
-          newX += this.velocity;
-          lookingDirection = TWO_PI;
-          break;
-      }
-      if(!this.pathCollisionDetected(newY, newX)){
-        this.x = newX;
-        this.y = newY;
-      }
+    switch(direction){
+      case 'up': 
+        newY -= this.velocity;
+        lookingDirection = PI + HALF_PI;
+        break;
+      case 'down':
+        newY += this.velocity;
+        lookingDirection = HALF_PI;
+        break;
+      case 'left':
+        newX -= this.velocity;
+        lookingDirection = PI;
+        break;
+      case 'right':
+        newX += this.velocity;
+        lookingDirection = TWO_PI;
+        break;
+    }
+    if(!this.pathCollisionDetected(newY, newX)){
+      this.x = newX;
+      this.y = newY;
+    }else if(this.canSwitchAnyPath){
+      // this.tryToSwitchPaths();
+    }
     
   }
 
@@ -266,7 +268,7 @@ class Character {
       return
     }
     this.currentPath = connectedPath;
-    characterMoveDirection = this.characterMoveNewDirection;
+    this.direction = this.characterMoveNewDirection;
     this.characterMoveNewDirection = null;
   }
 }
@@ -275,6 +277,7 @@ class BadGuy extends Character {
   fill = color('red');
   goodGuy = null;
   direction = 'down';
+  canSwitchAnyPath = true;
   setGoodGuy(goodGuy){
     this.goodGuy = goodGuy;
   }
@@ -290,7 +293,7 @@ class BadGuy extends Character {
 }
 class PacManCharacter extends Character {
 move(){
-  this.tryToMove(characterMoveDirection);
+  this.tryToMove(this.direction);
 }
 }
 class Chamber {
@@ -320,7 +323,6 @@ class Chamber {
   }
 }
 let goodGuy;
-let characterMoveDirection = null;
 let badGuys = [];
 const paths = [];
 
@@ -340,29 +342,29 @@ function keyPressed(e){
     }
   switch(e.key){
     case 'ArrowRight':
-      if(characterMoveDirection === 'left'){
-        characterMoveDirection = 'right';
+      if(goodGuy.direction === 'left'){
+        goodGuy.direction = 'right';
       }else{
         goodGuy.characterMoveNewDirection = 'right';
       }
       break;
     case 'ArrowLeft':
-      if(characterMoveDirection === 'right'){
-        characterMoveDirection = 'left';
+      if(goodGuy.direction === 'right'){
+        goodGuy.direction = 'left';
       }else{
         goodGuy.characterMoveNewDirection = 'left';
       }
       break;
     case 'ArrowUp':
-      if(characterMoveDirection === 'down'){
-        characterMoveDirection = 'up';
+      if(goodGuy.direction === 'down'){
+        goodGuy.direction = 'up';
       }else{
         goodGuy.characterMoveNewDirection = 'up';
       }
       break;
     case 'ArrowDown':
-      if(characterMoveDirection === 'up'){
-        characterMoveDirection = 'down';
+      if(goodGuy.direction === 'up'){
+        goodGuy.direction = 'down';
       }else{
         goodGuy.characterMoveNewDirection = 'down';
       }
@@ -370,8 +372,8 @@ function keyPressed(e){
       
   }
 
-  if(characterMoveDirection === null){
-    characterMoveDirection = goodGuy.characterMoveNewDirection;
+  if(goodGuy.direction === null){
+    goodGuy.direction = goodGuy.characterMoveNewDirection;
   }
 }
 function createPathsAndRelationships(){
