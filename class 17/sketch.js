@@ -20,7 +20,7 @@ const pathCoords = [
   [660, 20, 660, 260],
   [760, 20, 760, 260],
   [20, 260, 760, 260],];
-let characterMoveNewDirection;
+
 let lookingDirection  = null;
 let chamber;
 let chamberNewX1;
@@ -179,6 +179,7 @@ class Character {
   fill = color(255, 255, 0);
   velocity = 4;
   currentPath = null;
+  characterMoveNewDirection = null;
   constructor(x, y, width, height, path, coords){
     this.x = x;
     this.y = y;
@@ -197,9 +198,9 @@ class Character {
     if(direction == null){
       return;
     }
-    if (this.currentPath.isHorizontal && (characterMoveNewDirection == 'up' || characterMoveNewDirection == 'down')){
+    if (this.currentPath.isHorizontal && (this.characterMoveNewDirection == 'up' || this.characterMoveNewDirection == 'down')){
       this.tryToSwitchPaths();
-    }else if (this.currentPath.isVertical && (characterMoveNewDirection == 'left' || characterMoveNewDirection == 'right')){
+    }else if (this.currentPath.isVertical && (this.characterMoveNewDirection == 'left' || this.characterMoveNewDirection == 'right')){
       this.tryToSwitchPaths();
     }
     
@@ -251,13 +252,13 @@ class Character {
   tryToSwitchPaths(){
     let newX = this.x;
     let newY = this.y;
-    if(characterMoveNewDirection === 'up'){
+    if(this.characterMoveNewDirection === 'up'){
       newY = this.y - this.velocity;
-    }else if (characterMoveNewDirection === 'down'){
+    }else if (this.characterMoveNewDirection === 'down'){
       newY = this.y + this.velocity;
-    }else if (characterMoveNewDirection === 'left'){
+    }else if (this.characterMoveNewDirection === 'left'){
       newX = this.x - this.velocity;
-    }else if (characterMoveNewDirection === 'right'){
+    }else if (this.characterMoveNewDirection === 'right'){
       newX = this.x + this.velocity;
     }
     const connectedPath = this.getConnectedPathTouchingPoint(newX, newY);
@@ -265,14 +266,15 @@ class Character {
       return
     }
     this.currentPath = connectedPath;
-    characterMoveDirection = characterMoveNewDirection;
-    characterMoveNewDirection = null;
+    characterMoveDirection = this.characterMoveNewDirection;
+    this.characterMoveNewDirection = null;
   }
 }
 
 class BadGuy extends Character {
   fill = color('red');
   goodGuy = null;
+  direction = 'down';
   setGoodGuy(goodGuy){
     this.goodGuy = goodGuy;
   }
@@ -283,7 +285,7 @@ class BadGuy extends Character {
     this.y = newY;
   }
   move(){
-    //this.followGoodGuy();
+    this.tryToMove(this.direction);
   }
 }
 class PacManCharacter extends Character {
@@ -324,7 +326,7 @@ const paths = [];
 
 function pauseGame(){
   if(isPaused){
-    characterMoveNewDirection = null;
+    goodGuy.characterMoveNewDirection = null;
     isPaused = false;
     loop();
   } else {
@@ -341,35 +343,35 @@ function keyPressed(e){
       if(characterMoveDirection === 'left'){
         characterMoveDirection = 'right';
       }else{
-        characterMoveNewDirection = 'right';
+        goodGuy.characterMoveNewDirection = 'right';
       }
       break;
     case 'ArrowLeft':
       if(characterMoveDirection === 'right'){
         characterMoveDirection = 'left';
       }else{
-        characterMoveNewDirection = 'left';
+        goodGuy.characterMoveNewDirection = 'left';
       }
       break;
     case 'ArrowUp':
       if(characterMoveDirection === 'down'){
         characterMoveDirection = 'up';
       }else{
-        characterMoveNewDirection = 'up';
+        goodGuy.characterMoveNewDirection = 'up';
       }
       break;
     case 'ArrowDown':
       if(characterMoveDirection === 'up'){
         characterMoveDirection = 'down';
       }else{
-        characterMoveNewDirection = 'down';
+        goodGuy.characterMoveNewDirection = 'down';
       }
       break;
       
   }
 
   if(characterMoveDirection === null){
-    characterMoveDirection = characterMoveNewDirection;
+    characterMoveDirection = goodGuy.characterMoveNewDirection;
   }
 }
 function createPathsAndRelationships(){
