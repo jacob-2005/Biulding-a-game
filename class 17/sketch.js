@@ -226,7 +226,7 @@ class Character {
       this.x = newX;
       this.y = newY;
     }else if(this.canSwitchAnyPath){
-      // this.tryToSwitchPaths();
+      this.tryToSwitchPaths();
     }
     
   }
@@ -278,6 +278,8 @@ class BadGuy extends Character {
   goodGuy = null;
   direction = 'down';
   canSwitchAnyPath = true;
+  randomX = random(0, 1);
+  randomY = random(0, 1);
   setGoodGuy(goodGuy){
     this.goodGuy = goodGuy;
   }
@@ -289,6 +291,32 @@ class BadGuy extends Character {
   }
   move(){
     this.tryToMove(this.direction);
+  }
+  getConnectedPathTouchingPoint(x, y){
+    return this.currentPath.connections.filter(path =>{
+      return path.isPointOnPath(x, y);
+    })[0];
+  }
+  tryToSwitchPaths(){
+    const connectedPath = this.getConnectedPathTouchingPoint(this.x, this.y);
+    if(!connectedPath){
+      return
+    }
+    this.currentPath = connectedPath;
+    if(this.currentPath.isHorizontal){
+      if(this.randomX < 0.5){
+        this.direction = 'left';
+      }else{
+        this.direction = 'right';
+      }
+    }else if(this.currentPath.isVertical){
+      if(this.randomY < 0.5){
+        this.direction = 'up';
+      }else{
+        this.direction = 'down';
+      }
+    }
+    this.characterMoveNewDirection = null;
   }
 }
 class PacManCharacter extends Character {
