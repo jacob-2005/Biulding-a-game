@@ -278,16 +278,43 @@ class BadGuy extends Character {
   goodGuy = null;
   direction = 'down';
   canSwitchAnyPath = true;
+  isFollowingGoodGuy = false;
   setGoodGuy(goodGuy){
     this.goodGuy = goodGuy;
   }
-  followGoodGuy(){
+  DIGDUGfollowGoodGuy(){
     const [newX, newY] = followPoint(this.x, this.y, this.goodGuy.x, this.goodGuy.y, this.velocity)
 
     this.x = newX;
     this.y = newY;
   }
+  tryToFollowGoodGuy(){
+    if(this.goodGuy.currentPath !== this.currentPath){
+      return
+    }
+    this.isFollowingGoodGuy = true;
+  }
+  turnToGoodGuy(){
+    if(this.currentPath.isHorizontal && this.x < this.goodGuy.x){
+      this.direction = 'right';
+    }
+    if(this.currentPath.isHorizontal && this.x > this.goodGuy.x){
+      this.direction = 'left';
+    }
+    if(this.currentPath.isVertical && this.y > this.goodGuy.y){
+      this.direction = 'up';
+    }
+    if(this.currentPath.isVertical && this.y < this.goodGuy.y){
+      this.direction = 'down';
+    }
+  }
   move(){
+    if(!this.isFollowingGoodGuy){
+      this.tryToFollowGoodGuy();
+    }
+    if(this.isFollowingGoodGuy){
+      this.turnToGoodGuy();
+    }
     this.tryToMove(this.direction);
   }
   getConnectedPathTouchingPoint(x, y){
