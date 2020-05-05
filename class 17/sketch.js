@@ -278,8 +278,6 @@ class BadGuy extends Character {
   goodGuy = null;
   direction = 'down';
   canSwitchAnyPath = true;
-  randomX = random(0, 1);
-  randomY = random(0, 1);
   setGoodGuy(goodGuy){
     this.goodGuy = goodGuy;
   }
@@ -297,26 +295,100 @@ class BadGuy extends Character {
       return path.isPointOnPath(x, y);
     })[0];
   }
-  tryToSwitchPaths(){
-    const connectedPath = this.getConnectedPathTouchingPoint(this.x, this.y);
-    if(!connectedPath){
-      return
-    }
-    this.currentPath = connectedPath;
+  setRandomDirection(){
+    const randomNumber = random(0, 1);
+
     if(this.currentPath.isHorizontal){
-      if(this.randomX < 0.5){
+      if(randomNumber < 0.5){
         this.direction = 'left';
       }else{
         this.direction = 'right';
       }
     }else if(this.currentPath.isVertical){
-      if(this.randomY < 0.5){
+      if(randomNumber < 0.5){
         this.direction = 'up';
       }else{
         this.direction = 'down';
       }
     }
-    this.characterMoveNewDirection = null;
+  }
+  canGoUp(){
+    if(this.currentPath.isVertical){
+      if(this.y > this.currentPath.coords[1]){
+        return true;
+      }
+    }
+    return false;
+  }
+  canGoDown(){
+    if(this.currentPath.isVertical){
+      if(this.y < this.currentPath.coords[3]){
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  canGoLeft(){
+    if(this.currentPath.isHorizontal){
+      if(this.x > this.currentPath.coords[0]){
+        return true;
+      }
+    }
+    return false;
+  }
+  canGoRight(){
+    if(this.currentPath.isHorizontal){
+      if(this.x < this.currentPath.coords[2]){
+        return true;
+      }
+    }
+    return false;
+  }
+  reverse(){
+    switch(this.direction){
+      case 'left':
+        return 'right';
+      case 'right':
+        return 'left';
+      case 'up':
+        return 'down';
+      case 'down':
+        return 'up';
+    }
+  }
+  tryToSwitchPaths(){
+    const connectedPath = this.getConnectedPathTouchingPoint(this.x, this.y);
+    if(!connectedPath){
+      this.direction = this.reverse();
+      return
+    }
+    this.currentPath = connectedPath;
+    if(this.canGoRight() && this.canGoLeft()){
+      this.setRandomDirection();
+      return;
+    }
+    if(this.canGoUp() && this.canGoDown()){
+      this.setRandomDirection();
+      return;
+    }
+    if(this.canGoRight()){
+      this.direction = 'right';
+      return;
+    }
+    if(this.canGoLeft()){
+      this.direction = 'left';
+      return;
+    }
+    if(this.canGoUp()){
+      this.direction = 'up';
+      return;
+    }
+    if(this.canGoDown()){
+      this.direction = 'down';
+      return;
+    }
+    throw new Error('imposable direction for BadGuy');
   }
 }
 class PacManCharacter extends Character {
