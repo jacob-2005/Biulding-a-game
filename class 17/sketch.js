@@ -350,6 +350,14 @@ class BadGuy extends Character {
       this.isFollowingGoodGuy = false;
     }
   }
+  tryToRandomlySwitchPaths(){
+    if(this.isFollowingGoodGuy){
+      return;
+    }
+    if(random() < 0.2){
+      this.tryToSwitchPaths(false);
+    }
+  }
   move(){
     if(!this.isFollowingGoodGuy){
       this.tryToFollowGoodGuy();
@@ -357,6 +365,7 @@ class BadGuy extends Character {
     if(this.isFollowingGoodGuy){
       this.turnToGoodGuy();
     }
+    this.tryToRandomlySwitchPaths();
     this.tryToMove(this.direction);
   }
   getConnectedPathTouchingPoint(x, y){
@@ -426,11 +435,14 @@ class BadGuy extends Character {
         return 'up';
     }
   }
-  tryToSwitchPaths(){
+  tryToSwitchPaths(shouldReverse = true){
     const connectedPath = this.getConnectedPathTouchingPoint(this.x, this.y);
+    if(!connectedPath && !shouldReverse){
+      return
+    }
     if(!connectedPath){
       this.direction = this.reverse();
-      return
+      return;
     }
     this.currentPath = connectedPath;
     if(this.canGoRight() && this.canGoLeft()){
