@@ -192,6 +192,9 @@ class Character {
     fill(this.fill)
     ellipse(this.x + (this.width/2), this.y + (this.height/2), this.width, this.height)
   }
+  getConnectedPath(){
+    return this.getConnectedPathTouchingPoint(this.x, this.y);
+  }
   tryToMove(direction){
     let newY = this.y;
     let newX = this.x;
@@ -289,23 +292,62 @@ class BadGuy extends Character {
     this.y = newY;
   }
   tryToFollowGoodGuy(){
-    if(this.goodGuy.currentPath !== this.currentPath){
+    this.switchPathsTofollowGoodGuy();
+    if(this.goodGuy.currentPath === this.currentPath){
+      this.isFollowingGoodGuy = true;
       return
     }
-    this.isFollowingGoodGuy = true;
+    if(this.goodGuy.getConnectedPath() === this.currentPath){
+      this.isFollowingGoodGuy = true;
+    }
   }
-  turnToGoodGuy(){
+  isGoodGuyOnBadGuysConnectedPath(){
+    if(this.goodGuy.currentPath === this.currentPath){
+      return true;
+    }
+    if(this.goodGuy.getConnectedPath() === this.currentPath){
+      return true;
+    }
+    return false;
+  }
+  turnToGoodGuyOnSamePath(){
+    if(!this.isGoodGuyOnBadGuysConnectedPath()){
+      return
+    }
     if(this.currentPath.isHorizontal && this.x < this.goodGuy.x){
       this.direction = 'right';
+      return;
     }
     if(this.currentPath.isHorizontal && this.x > this.goodGuy.x){
       this.direction = 'left';
+      return;
     }
     if(this.currentPath.isVertical && this.y > this.goodGuy.y){
       this.direction = 'up';
+      return;
     }
     if(this.currentPath.isVertical && this.y < this.goodGuy.y){
       this.direction = 'down';
+      return;
+    }
+  }
+  switchPathsTofollowGoodGuy(){
+    if(this.goodGuy.currentPath === this.currentPath){
+      return
+    }
+    const connectedPath = this.getConnectedPathTouchingPoint(this.x, this.y);
+    if(!connectedPath){
+      return;
+    }
+    if(connectedPath === this.goodGuy.currentPath){
+      this.currentPath = connectedPath;
+    }
+  }
+  turnToGoodGuy(){
+    this.switchPathsTofollowGoodGuy();
+    this.turnToGoodGuyOnSamePath();
+    if(!this.isGoodGuyOnBadGuysConnectedPath()){
+      this.isFollowingGoodGuy = false;
     }
   }
   move(){
