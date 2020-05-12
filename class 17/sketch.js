@@ -21,10 +21,22 @@ const pathCoords = [
   [760, 20, 760, 260],
   [20, 260, 760, 260],];
 
-let lookingDirection  = null;
 let chamber;
 let chamberNewX1;
 let chamberNewX2;
+
+let mouthCount;
+let increaseMouthCount;
+let direction = -1;
+const FRAME_RATE = 60;
+let lookingDirection = 0;
+const bottomJawArc = mouthCount + lookingDirection; 
+const topJawArc = -mouthCount + lookingDirection;
+
+let pacMan1X = 50;
+let pacMan1Y = 50;
+const pacManWidth = 15;
+
 function followPoint(startingX, startingY, endingX, endingY, velosity) {
   const deltaY = endingY - startingY;
   const deltaX = endingX - startingX;
@@ -210,19 +222,15 @@ class Character {
     switch(direction){
       case 'up': 
         newY -= this.velocity;
-        lookingDirection = PI + HALF_PI;
         break;
       case 'down':
         newY += this.velocity;
-        lookingDirection = HALF_PI;
         break;
       case 'left':
         newX -= this.velocity;
-        lookingDirection = PI;
         break;
       case 'right':
         newX += this.velocity;
-        lookingDirection = TWO_PI;
         break;
     }
     if(!this.pathCollisionDetected(newY, newX)){
@@ -275,7 +283,42 @@ class Character {
     this.characterMoveNewDirection = null;
   }
 }
+class PacManPlayer extends Character {
+  fill = color('yellow');
+  draw(){
+    fill(this.fill);
+    mouthCount += direction * increaseMouthCount;
+    const bottomJawArc = mouthCount + lookingDirection; 
+    const topJawArc = -mouthCount + lookingDirection;
+  
+    if (frameCount % (FRAME_RATE / 2) === 0) {
+      direction = direction * -1;
+    }
+    arc(this.x + (this.width/2), this.y + (this.height/2), characterWidth, characterHeight, bottomJawArc, topJawArc, PIE);
+  
+  }
 
+  move(){
+    this.tryToMove(this.direction);
+    this.mouthMove()
+  }
+  mouthMove(){
+    switch(this.direction){
+      case 'up': 
+        lookingDirection = PI + HALF_PI;
+        break;
+      case 'down':
+        lookingDirection = HALF_PI;
+        break;
+      case 'left':
+        lookingDirection = PI;
+        break;
+      case 'right':
+        lookingDirection = TWO_PI;
+        break;
+    }
+  }
+}
 class BadGuy extends Character {
   fill = color('red');
   goodGuy = null;
@@ -358,7 +401,14 @@ class BadGuy extends Character {
       this.tryToSwitchPaths(false);
     }
   }
+  detectCollitionWithGoodGuy(){
+    let disanceFromGoodGuy = dist(this.x, this.y, this.goodGuy.x, this.goodGuy.y);
+    if(disanceFromGoodGuy < characterWidth){
+      // pauseGame();
+    }
+  }
   move(){
+    this.detectCollitionWithGoodGuy();
     if(!this.isFollowingGoodGuy){
       this.tryToFollowGoodGuy();
     }
@@ -472,11 +522,7 @@ class BadGuy extends Character {
     throw new Error('imposable direction for BadGuy');
   }
 }
-class PacManCharacter extends Character {
-move(){
-  this.tryToMove(this.direction);
-}
-}
+
 class Chamber {
   x = 340;
   y = 100;
@@ -577,17 +623,19 @@ function connectPaths(path1, path2){
   addConnection(path1, path2);
 }
 function setup() {
+  mouthCount = QUARTER_PI;
+  increaseMouthCount = QUARTER_PI/FRAME_RATE * 2;
   createCanvas(800, 500);
   rectMode(CORNER);
   createPathsAndRelationships();
-  goodGuy = new PacManCharacter(200, 20, characterWidth, characterHeight, paths[0]);
+  goodGuy = new PacManPlayer(200, 20, characterWidth, characterHeight, paths[0]);
 
   badGuys[0] = new BadGuy(20, 40, characterWidth, characterHeight,paths[1]);
 
   badGuys.forEach((badGuy, i) => {
     badGuy.setGoodGuy(goodGuy);
   });
-
+  frameRate(FRAME_RATE)
 }
 
 function draw() {
