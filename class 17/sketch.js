@@ -404,6 +404,7 @@ class BadGuy extends Character {
     let disanceFromGoodGuy = dist(this.x, this.y, this.goodGuy.x, this.goodGuy.y);
     if(disanceFromGoodGuy < characterWidth){
       gameOver();
+      fill(255, 0, 0)
       textSize(32)
       text('Game Over', 320, 150)
       text('You lose', 345, 190)
