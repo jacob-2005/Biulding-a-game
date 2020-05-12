@@ -297,7 +297,6 @@ class PacManPlayer extends Character {
     arc(this.x + (this.width/2), this.y + (this.height/2), characterWidth, characterHeight, bottomJawArc, topJawArc, PIE);
   
   }
-
   move(){
     this.tryToMove(this.direction);
     this.mouthMove()
@@ -404,7 +403,10 @@ class BadGuy extends Character {
   detectCollitionWithGoodGuy(){
     let disanceFromGoodGuy = dist(this.x, this.y, this.goodGuy.x, this.goodGuy.y);
     if(disanceFromGoodGuy < characterWidth){
-      // pauseGame();
+      gameOver();
+      textSize(32)
+      text('Game Over', 320, 150)
+      text('You lose', 345, 190)
     }
   }
   move(){
@@ -560,6 +562,18 @@ function pauseGame(){
     loop();
   } else {
     isPaused = true;
+    noLoop();
+  }
+}
+function gameOver(){
+  if(isOver){
+    goodGuy.characterMoveNewDirection = null;
+    isOver = false;
+    isPaused = false
+    loop();
+
+  } else {
+    isOver = true;
     noLoop();
   }
 }
