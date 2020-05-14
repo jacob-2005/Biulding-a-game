@@ -37,6 +37,10 @@ let pacMan1X = 50;
 let pacMan1Y = 50;
 const pacManWidth = 15;
 
+const SPACE_BETWEEN_FOOD = 10;
+const allFood = [];
+let totalFoodEaten = 0;
+
 function followPoint(startingX, startingY, endingX, endingY, velosity) {
   const deltaY = endingY - startingY;
   const deltaX = endingX - startingX;
@@ -66,6 +70,7 @@ class Path {
   isHorizontal = false;
   width = null;
   height = null;
+  food = [];
   constructor (width, height, coords) {
     this.paddingVertical = height / 6;
     this.paddingHorizontal = width / 6;
@@ -173,6 +178,12 @@ class Path {
       }
     }
     return true;
+  }
+  setFood(){
+
+  }
+  tryToEatFood(characterX, characterY){
+
   }
   draw (){
     const [x1, y1, x2, y2] = this.coords;
@@ -525,7 +536,28 @@ class BadGuy extends Character {
     throw new Error('imposable direction for BadGuy');
   }
 }
-
+// function getAlreadyExistingFood(x, y){
+//   for(let i = 0; i < 425; i++){
+//     allFood;
+//   }
+//   return food;
+// }
+// function 
+// class Food {
+//   isEaten = false;
+//   x = null;
+//   y = null;
+//   constructor(x, y){
+//     this.x = x;
+//     this.y = y;
+//     this.isEaten = isEaten;
+//   }
+//   draw(){
+//     stroke(255, 255 ,0)
+//     strokeWaight(5);
+//     point(this.x, this.y);
+//   }
+// }
 class Chamber {
   x = 340;
   y = 100;
@@ -533,6 +565,8 @@ class Chamber {
   height = 60;
   touchingPath = null;
   centerOfChamberX = null;
+  chamberDoorX1 = null;
+  chamberNewX2 = null;
   constructor(x, y, width, height, touchingPath, centerOfChamberX) {
     this.x = x;
     this.y = y;
@@ -540,16 +574,17 @@ class Chamber {
     this.height = height;
     this.touchingPath = touchingPath; 
     this.centerOfChamberX = (x + (width/2));
+    this.chamberDoorX1 = (this.x + (this.centerOfChamberX /2));
+    this.chamberNewX2 = ((this.x + this.width) - (this.centerOfChamberX/2));
     this.draw(centerOfChamberX, x, y, width, height);
   }
   draw(centerOfChamberX, x, y, width, height) {
     fill(0);
     rect(x, y, width, height);
 
-    let chamberDoorX1 = (x + (centerOfChamberX /2));
-    let chamberNewX2 = ((x + width) - (centerOfChamberX/2));
 
-     rect(chamberDoorX1, y, chamberNewX2, y);
+
+    rect(this.chamberDoorX1, y, this.chamberNewX2, 105);
   }
 }
 let goodGuy;
@@ -643,6 +678,7 @@ function setup() {
   createCanvas(800, 500);
   rectMode(CORNER);
   createPathsAndRelationships();
+  chamber = new Chamber(340, 100, 120, 60)
   goodGuy = new PacManPlayer(200, 20, characterWidth, characterHeight, paths[0]);
 
   badGuys[0] = new BadGuy(20, 40, characterWidth, characterHeight,paths[1]);
@@ -658,7 +694,8 @@ function draw() {
   paths.forEach((path, i) => {
     path.draw();
   });
-
+  chamber.draw();
+  
   goodGuy.draw();
   goodGuy.move();
 
