@@ -8,7 +8,7 @@ const pathCoords = [
   [100, 20, 100, 260],
   [100, 80, 240, 80],
   [240, 80, 240, 260],
-  [100, 140, 180, 140],
+  [100, 140, 240, 140],
   [180, 140, 180, 260],
   [280, 80, 280, 260],
   [280, 80, 500, 80],
@@ -16,10 +16,11 @@ const pathCoords = [
   [280, 200, 500, 200],
   [380, 20, 380, 80],
   [560, 20, 560, 260],
-  [560, 140, 760, 140],
+  [500, 140, 760, 140],
   [660, 20, 660, 260],
   [760, 20, 760, 260],
-  [20, 260, 760, 260],];
+  [20, 260, 760, 260],
+  [240, 120, 280, 120]];
 
 let chamber;
 let chamberNewX1;
@@ -204,12 +205,13 @@ class Character {
   currentPath = null;
   direction = null;
   characterMoveNewDirection = null;
-  constructor(x, y, width, height, path, coords){
+  constructor(x, y, width, height, path, fill, coords){
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.currentPath = path;
+    this.fill = fill;
   }
   draw(){
     fill(this.fill)
@@ -295,7 +297,6 @@ class Character {
   }
 }
 class PacManPlayer extends Character {
-  fill = color('yellow');
   draw(){
     fill(this.fill);
     mouthCount += direction * increaseMouthCount;
@@ -330,7 +331,6 @@ class PacManPlayer extends Character {
   }
 }
 class BadGuy extends Character {
-  fill = color('red');
   goodGuy = null;
   direction = 'down';
   canSwitchAnyPath = true;
@@ -410,15 +410,18 @@ class BadGuy extends Character {
     if(random() < 0.2){
       this.tryToSwitchPaths(false);
     }
+    if(random() < 0.01){
+      this.direction = this.reverse();
+    }
   }
   detectCollitionWithGoodGuy(){
     let disanceFromGoodGuy = dist(this.x, this.y, this.goodGuy.x, this.goodGuy.y);
     if(disanceFromGoodGuy < characterWidth){
       gameOver();
-      fill(255, 0, 0)
-      textSize(32)
-      text('Game Over', 320, 150)
-      text('You lose', 345, 190)
+      fill(255)
+      textSize(100)
+      text('Game Over', 120, 150)
+      text('You lose', 195, 250)
     }
   }
   move(){
@@ -536,28 +539,38 @@ class BadGuy extends Character {
     throw new Error('imposable direction for BadGuy');
   }
 }
-// function getAlreadyExistingFood(x, y){
-//   for(let i = 0; i < 425; i++){
-//     allFood;
-//   }
-//   return food;
-// }
-// function 
-// class Food {
-//   isEaten = false;
-//   x = null;
-//   y = null;
-//   constructor(x, y){
-//     this.x = x;
-//     this.y = y;
-//     this.isEaten = isEaten;
-//   }
-//   draw(){
-//     stroke(255, 255 ,0)
-//     strokeWaight(5);
-//     point(this.x, this.y);
-//   }
-// }
+function setNewFood(food){
+  allFood = [food]
+}
+function getAlreadyExistingFood(x, y){
+  for(let i = 0; i < 425; i++){
+    allFood;
+  }
+  return food;
+}
+class Food {
+  isEaten = false;
+  x = null;
+  y = null;
+  constructor(x, y){
+    this.x = x;
+    this.y = y;
+    this.isEaten = isEaten;
+  }
+  draw(){
+    stroke(255, 255 ,0)
+    strokeWaight(5);
+    point(this.x, this.y);
+  }
+}
+function youWin(){
+  if(totalFoodEaten === 425){
+    gameOver();
+    fill(255)
+    textSize(100)
+    text('YOU WIN!', 145, 190);
+ }
+}
 class Chamber {
   x = 340;
   y = 100;
@@ -565,31 +578,31 @@ class Chamber {
   height = 60;
   touchingPath = null;
   centerOfChamberX = null;
-  chamberDoorX1 = null;
-  chamberNewX2 = null;
   constructor(x, y, width, height, touchingPath, centerOfChamberX) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.touchingPath = touchingPath; 
-    this.centerOfChamberX = (x + (width/2));
-    this.chamberDoorX1 = (this.x + (this.centerOfChamberX /2));
-    this.chamberNewX2 = ((this.x + this.width) - (this.centerOfChamberX/2));
-    this.draw(centerOfChamberX, x, y, width, height);
+    this.touchingPath = touchingPath;
+    centerOfChamberX = (this.x + (this.width/2)); 
+    this.centerOfChamberX = centerOfChamberX;
+    this.draw();
   }
-  draw(centerOfChamberX, x, y, width, height) {
+  connectToNearestPath(){
+    this.touchingPath = path[11];
+  }
+  draw() {
     fill(0);
-    rect(x, y, width, height);
-
-
-
-    rect(this.chamberDoorX1, y, this.chamberNewX2, 105);
+    rect(this.x, this.y, this.width, this.height);
+    stroke(253, 190, 190)
+    line(380, 101, 420, 101)
+    noStroke()
   }
 }
 let goodGuy;
 let badGuys = [];
 const paths = [];
+let chambers = [];
 
 function pauseGame(){
   if(isPaused){
@@ -678,11 +691,13 @@ function setup() {
   createCanvas(800, 500);
   rectMode(CORNER);
   createPathsAndRelationships();
-  chamber = new Chamber(340, 100, 120, 60)
-  goodGuy = new PacManPlayer(200, 20, characterWidth, characterHeight, paths[0]);
+  chamber = new Chamber(340, 102, 120, 60)
+  goodGuy = new PacManPlayer(200, 20, characterWidth, characterHeight, paths[0], 'yellow');
 
-  badGuys[0] = new BadGuy(20, 40, characterWidth, characterHeight,paths[1]);
-
+  badGuys[0] = new BadGuy(400, 80, characterWidth, characterHeight,paths[11], 'red');
+  badGuys[1] = new BadGuy(400, 145, characterWidth, characterHeight,paths[11], 'pink');
+  badGuys[2] = new BadGuy(360, 145, characterWidth, characterHeight,paths[11], 'blue');
+  badGuys[3] = new BadGuy(440, 145, characterWidth, characterHeight,paths[11], 'green');
   badGuys.forEach((badGuy, i) => {
     badGuy.setGoodGuy(goodGuy);
   });
@@ -695,13 +710,13 @@ function draw() {
     path.draw();
   });
   chamber.draw();
-  
+
   goodGuy.draw();
   goodGuy.move();
-
+  
   badGuys.forEach((badGuy, i) => {
     badGuy.move();
     badGuy.draw();
   });  
-
+  youWin();
 }
