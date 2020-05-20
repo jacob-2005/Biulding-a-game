@@ -578,6 +578,11 @@ class Chamber {
   height = 60;
   touchingPath = null;
   centerOfChamberX = null;
+  ghosts = [];
+  indexOfGhostCurentlyEjecting = -1;
+  velocityOfGhost = 4
+  isEjected = false
+  doorY = 101
   constructor(x, y, width, height, touchingPath, centerOfChamberX) {
     this.x = x;
     this.y = y;
@@ -588,8 +593,40 @@ class Chamber {
     this.centerOfChamberX = centerOfChamberX;
     this.draw();
   }
+  addGhost(badGuy){
+    this.ghosts.push(badGuy)
+  }
   connectToNearestPath(){
-    this.touchingPath = path[11];
+    this.touchingPath = paths[11];
+  }
+  tryToEjectGhost(){
+    if(frameCount === 0){
+      return;
+    }
+    if(frameCount % 300 === 0){
+      this.indexOfGhostCurentlyEjecting += 1;
+      this.isEjected = false
+    }
+    if(this.indexOfGhostCurentlyEjecting === -1 || this.indexOfGhostCurentlyEjecting >= this.ghosts.length){
+      return;
+    }
+    if(this.isEjected === false){
+      this.moveToDoor()
+    }
+  }
+  moveToDoor(){
+    const badGuy = this.ghosts[this.indexOfGhostCurentlyEjecting];
+    const [newX, newY] = followPoint(badGuy.x, badGuy.y, 400, 80, this.velocityOfGhost);
+    if(BadGuy.y < this.doorY){
+      return
+    }
+    badGuy.y = newY;
+    badGuy.x = newX;
+    if(badGuy.y === 80 ){
+      badGuy.currentPath = paths[11];
+      this.isEjected = true
+      return 
+    }
   }
   draw() {
     fill(0);
@@ -695,12 +732,15 @@ function setup() {
   goodGuy = new PacManPlayer(200, 20, characterWidth, characterHeight, paths[0], 'yellow');
 
   badGuys[0] = new BadGuy(400, 80, characterWidth, characterHeight,paths[11], 'red');
-  badGuys[1] = new BadGuy(400, 145, characterWidth, characterHeight,paths[11], 'pink');
-  badGuys[2] = new BadGuy(360, 145, characterWidth, characterHeight,paths[11], 'blue');
-  badGuys[3] = new BadGuy(440, 145, characterWidth, characterHeight,paths[11], 'green');
+  badGuys[1] = new BadGuy(400, 144, characterWidth, characterHeight,paths[11], 'pink');
+  badGuys[2] = new BadGuy(360, 144, characterWidth, characterHeight,paths[11], 'blue');
+  badGuys[3] = new BadGuy(440, 144, characterWidth, characterHeight,paths[11], 'green');
   badGuys.forEach((badGuy, i) => {
     badGuy.setGoodGuy(goodGuy);
   });
+  badGuys.slice(1).forEach(badGuy =>{
+    chamber.addGhost(badGuy)
+  })
   frameRate(FRAME_RATE)
 }
 
@@ -710,6 +750,7 @@ function draw() {
     path.draw();
   });
   chamber.draw();
+  chamber.tryToEjectGhost();
 
   goodGuy.draw();
   goodGuy.move();
