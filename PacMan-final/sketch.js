@@ -77,10 +77,11 @@ class Path {
     this.paddingHorizontal = width / 6;
     this.coords = coords;
     const [x1, y1, x2, y2] = coords;
-    this.setOrientation(coords)
+    this.setOrientation(coords);
     this.setCoordintes(x1, y1, x2, y2);
     this.setWidth(characterWidth);
     this.setHeight(characterHeight);
+    this.setFood();
   }
   setOrientation(coords){
     if(coords[0] === coords[2]){
@@ -184,7 +185,22 @@ class Path {
 
   }
   tryToEatFood(characterX, characterY){
+    if(characterX === this.x && characterY === this.y){
+      isEaten = true;
+      totalFoodEaten += 1;
+    }
+  }
+  drawFood(){
+    let foodX = null;
+    if(this.isEaten === true){
+      return
+    }
+    if(goodGuy.currentPath.isHorizontal){
+      for(let foodX = this.x1; foodX > this.x2; foodX + SPACE_BETWEEN_FOOD){
+        point(foodX, this.y1)
+      }
 
+    }
   }
   draw (){
     const [x1, y1, x2, y2] = this.coords;
@@ -192,6 +208,7 @@ class Path {
     noStroke();
     
     rect(x1, y1, this.width, this.height);
+    this.drawFood();
   }
 
 }
@@ -539,14 +556,15 @@ class BadGuy extends Character {
     throw new Error('imposable direction for BadGuy');
   }
 }
-function setNewFood(food){
-  allFood = [food]
-}
-function getAlreadyExistingFood(x, y){
+function returnExistingFood(x, y){
   for(let i = 0; i < 425; i++){
     allFood;
   }
-  return food;
+
+  return true;
+}
+function setNewFood(food){
+  allFood = [food]
 }
 class Food {
   isEaten = false;
@@ -748,7 +766,9 @@ function draw() {
   background(180, 180, 255);
   paths.forEach((path, i) => {
     path.draw();
+    path.drawFood();
   });
+
   chamber.draw();
   chamber.tryToEjectGhost();
 
